@@ -10,8 +10,8 @@ json = import_simplejson()
 
 # Go to http://apps.twitter.com and create an app.
 # The consumer key and secret will be generated for you after
-consumer_key=#your consumer_key
-consumer_secret=#your consumer_secret
+consumer_key= #your consumer_key
+consumer_secret= #your consumer_secret
 
 # After the step above, you will be redirected to your app's page.
 # Create an access token under the the "Your access token" section
@@ -52,7 +52,7 @@ class StdOutListener(StreamListener):
                 saveFile.write("\n")
                 saveFile.close()
             if (self.num_tweets != 0) and (len(self.user_dict) % 100 == 0):
-                print ("mod worked reached limit of 20..stopping")
+                print ("mod worked reached limit of 100..stopping")
                 return False
             else:
                 return True
