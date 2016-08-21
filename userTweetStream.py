@@ -24,9 +24,11 @@ class StdOutListener(StreamListener):
     """
     def __init__(self, api=None):
         super(StdOutListener, self).__init__()
+        # add the cities of interest here
         self.location_list = [
         ("Chicago",[-88,41.6,-87.5,42]),
-        ("London",[-0.4,51.4,0.2,51.6]),
+        #("London",[-0.4,51.4,0.2,51.6]),
+        ("Rio",[-43.8,-23.0,-43.1,-22.7]),
         ("California",[-124.4,32.5,-114.1,42.0]),
         #("Tokyo",[2.2,48.8,2.5,48.9]),
         ("NewYork",[-74.2,40.5,-73.7,40.9])
@@ -44,16 +46,17 @@ class StdOutListener(StreamListener):
             self.num_tweets+=1
             if (is_protected==False) and (self.user_dict.has_key(user_info)==False):
                 self.user_dict[user_info]=self.city
-                saveFile=open('twitterDB.csv','a')
+                saveFile=open('twitterDB.txt','a')
                 writeThis = str( self.city + "," + str(user_info) )
                 #saveFile.write("\n")
                 saveFile.write(writeThis)
                 #saveFile.write(str(self.user_dict))
                 saveFile.write("\n")
                 saveFile.close()
-            if (self.num_tweets != 0) and (len(self.user_dict) % 100 == 0):
-                print ("mod worked reached limit of 100..stopping")
-                return False
+            # keep on gathering users from the stream until the count doesn't reach 1000
+            if (self.num_tweets != 0) and (len(self.user_dict) % 1000 == 0):
+                print ("Reached limit of 1000..stopping")
+                return False # then move on to the next city by closing the current city stream
             else:
                 return True
 
