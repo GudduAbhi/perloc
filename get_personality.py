@@ -1,8 +1,17 @@
-from __future__ import absolute_import, print_function import time import datetime import urllib2 import httplib import requests import json from pyspark import 
-SparkConf,SparkContext import sys
+from __future__ import absolute_import, print_function 
+import time 
+import datetime 
+import urllib2 
+import httplib 
+import requests 
+import json 
+from pyspark import SparkConf,SparkContext
+import sys
+
 # Go to http://apps.twitter.com and create an app. The consumer key and secret will be generated for you
 bearer_token = ''
 #get_all_tweets would gather the first 400 tweets from a twitter profile
+
 def get_all_tweets(user_screen_name):
     try:
         alltweets=[]
@@ -15,8 +24,7 @@ def get_all_tweets(user_screen_name):
         alltweets = [status for status in jdata]
         alltweets_id = [ids['id'] for ids in jdata]
         oldest_tweet_id = alltweets_id[-1] - 1
-        timeline_request = 
-urllib2.Request("https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name="+str(user_screen_name)+"&count=200"+"&max_id="+str(oldest_tweet_id))
+        timeline_request = urllib2.Request("https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name="+str(user_screen_name)+"&count=200"+"&max_id="+str(oldest_tweet_id))
         timeline_request.add_header("Authorization", "Bearer %s" % bearer_token)
         timeline_response = urllib2.urlopen(timeline_request)
         timeline_contents = timeline_response.read()
@@ -35,6 +43,8 @@ urllib2.Request("https://api.twitter.com/1.1/statuses/user_timeline.json?screen_
             pass
         else:
             print(str(err))
+
+
 # get_personality would send requests to IBM-watson personality-insights service to get the personality assessment for that user
 def get_personality(user_content):
     perloc_data = requests.post("https://gateway.watsonplatform.net/personality-insights/api" + "/v2/profile",
@@ -47,6 +57,8 @@ def get_personality(user_content):
                       )
     time.sleep(100/1000)
     return (extract_big5_elements (json.loads(perloc_data.text)))
+
+
 # extract_big5_elements would filter out the json that is returned by the personality-insights service
 def extract_big5_elements(parent_json_data):
     user_dict = {}
@@ -65,6 +77,8 @@ def extract_big5_elements(parent_json_data):
     trait_name = parent_json_data["tree"]["children"][0]["children"][0]["children"][idx]["children"][index]["id"]
     trait_percentage = parent_json_data["tree"]["children"][0]["children"][0]["children"][idx]["children"][index]["percentage"]
     return {trait_name:trait_percentage}
+
+
 # convert_to_dict would properly format the statuses of the user (i.e. it would make more descriptive)
 def convert_to_dict(obj):
     return {
@@ -77,12 +91,17 @@ def convert_to_dict(obj):
         'reply': ((obj['in_reply_to_status_id']) == None),
         'forward': False
     }
+
+
 # calculate_average would be called by reduceByKey() function to get the average personality trait for each location
 def calculate_average(a,b):
     sum_dict = {}
     for key in a:
         sum_dict[key] = ((a[key] + b[key])/300) # divide by the total number of users in a location
-    return sum_dict if __name__ == "__main__":
+    return sum_dict 
+
+
+if __name__ == "__main__":
     tweet_list = get_all_tweets
     get_avg = calculate_average
     my_conf = (SparkConf()
