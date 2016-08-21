@@ -105,15 +105,15 @@ def calculate_average(a,b):
     rio_rdd = rio_filter_rdd.mapValues(lambda user : tweet_list(user))
     print('Rio RDD created')
     time.sleep(61*15) # required because of the API-rate limit
-    chicago_filter_rdd = s1.filter(lambda (loc,user): loc=='Chicago')
+    chicago_filter_rdd = input_rdd.filter(lambda (loc,user): loc=='Chicago')
     chicago_rdd = chicago_filter_rdd.mapValues(lambda user : tweet_list(user))
     print('Chicago RDD created')
     time.sleep(61*15)
-    newyork_filter_rdd = s1.filter(lambda (loc,user): loc=='NewYork')
+    newyork_filter_rdd = input_rdd.filter(lambda (loc,user): loc=='NewYork')
     newyork_rdd = newyork_filter_rdd.mapValues(lambda user : tweet_list(user))
     print('NewYork RDD created')
     time.sleep(61*15)
-    california_filter_rdd = s1.filter(lambda (loc,user): loc=='California')
+    california_filter_rdd = input_rdd.filter(lambda (loc,user): loc=='California')
     california_rdd = california_filter_rdd.mapValues(lambda user : tweet_list(user))
     print('California RDD created')
     # Once done with the personality analysis for each location, simply gather them all in one rdd
