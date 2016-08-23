@@ -1,0 +1,19 @@
+This project aims to identify users' personality based on their twitter profiles. And even to distinguish one city behavior
+from another as a particular location is nothing but how people living over there perceive things 
+(which again is based on their personality).
+
+The file functions are described below:
+
+1) As this project is based on twitter data, the real bottleneck i found was having not enough request limits for twitter APIs.
+the file "get_bearer_token.py" somewhat solves this by exchanging your customer key and secret key for a bearer token which increased the API call 
+limit to 300 requests per 15-minute window. Still less but managable.
+
+2) File 'userTweetStream.py' would utilize Tweepy library to stream in user data from 4 different given locations (bounding boxes);
+And once 1000 users are identified from a given bounding box, the program would go on to detect the next 1000 users of another city.
+This way, we can create a key-value pair of (City,User) and store it in a file or DB.
+
+3) File 'get_personailty.py' would load the file containing (city,User) data and form a rdd to work upon in spark architecture.
+Eventually, with the successful transformations, each city will have a final key-value pair of (city,{aggregate of Big-5 traits}) 
+that would reveal a location specific personality profile.
+
+Have fun !!
