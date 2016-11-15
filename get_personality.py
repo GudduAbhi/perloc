@@ -97,7 +97,7 @@ def convert_to_dict(obj):
 def calculate_average(a,b):
     sum_dict = {}
     for key in a:
-        sum_dict[key] = ((a[key] + b[key])/300) # divide by the total number of users in a location
+        sum_dict[key] = ((a[key] + b[key])/1000) # divide by the total number of users in a location
     return sum_dict 
 
 
