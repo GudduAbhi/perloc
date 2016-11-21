@@ -77,7 +77,7 @@ def extract_big5_elements(parent_json_data):
 
 def update_entry(idx,index,parent_json_data):
     trait_name = parent_json_data["tree"]["children"][0]["children"][0]["children"][idx]["children"][index]["id"]
-    trait_percentage = parent_json_data["tree"]["children"][0]["children"][0]["children"][idx]["children"][index].["percentage"]
+    trait_percentage = parent_json_data["tree"]["children"][0]["children"][0]["children"][idx]["children"][index]["percentage"]
     return {trait_name:trait_percentage}
 
 
