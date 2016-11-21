@@ -73,9 +73,11 @@ def extract_big5_elements(parent_json_data):
             user_dict.update(update_entry(idx,1,parent_json_data))
         if parent_json_data['tree']['children'][0]['children'][0]['children'][idx]['id'] == 'Neuroticism' :
             user_dict.update(update_entry(idx,4,parent_json_data))
-    return user_dict def update_entry(idx,index,parent_json_data):
+    return user_dict 
+
+def update_entry(idx,index,parent_json_data):
     trait_name = parent_json_data["tree"]["children"][0]["children"][0]["children"][idx]["children"][index]["id"]
-    trait_percentage = parent_json_data["tree"]["children"][0]["children"][0]["children"][idx]["children"][index]["percentage"]
+    trait_percentage = parent_json_data["tree"]["children"][0]["children"][0]["children"][idx]["children"][index].["percentage"]
     return {trait_name:trait_percentage}
 
 
