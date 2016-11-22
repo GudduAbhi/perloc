@@ -34,27 +34,28 @@ class StdOutListener(StreamListener):
         ("NewYork",[-74.2,40.5,-73.7,40.9])
         #("Miami",[-80.3,25.7,-80.1,25.9])
         ]
-        self.num_tweets = 0
+        self.number = 0
         self.user_dict = {}
-
+        self.city=""
+        
     def on_data(self, data):
         #print(data)
         try:
             jdata = json.loads(data)
             user_info = jdata['user']['screen_name']
             is_protected = jdata['user']['protected']
-            self.num_tweets+=1
+            self.number+=1
             if (is_protected==False) and (self.user_dict.has_key(user_info)==False):
                 self.user_dict[user_info]=self.city
                 saveFile=open('twitterDB.txt','a')
-                writeThis = str( self.city + "," + str(user_info) )
+                writeThis = str( self.number + "," + self.city + "," +  str(user_info) )
                 #saveFile.write("\n")
                 saveFile.write(writeThis)
                 #saveFile.write(str(self.user_dict))
                 saveFile.write("\n")
                 saveFile.close()
             # keep on gathering users from the stream until the count doesn't reach 1000
-            if (self.num_tweets != 0) and (len(self.user_dict) % 1000 == 0):
+            if (self.number != 0) and (len(self.user_dict) % 1000 == 0):
                 print ("Reached limit of 1000..stopping")
                 return False # then move on to the next city by closing the current city stream
             else:
