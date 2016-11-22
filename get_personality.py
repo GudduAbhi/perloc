@@ -96,12 +96,33 @@ def convert_to_dict(obj):
 
 
 # calculate_average would be called by reduceByKey() function to get the average personality trait for each location
-def calculate_average(a,b):
+def calculate_total(a,b):
     sum_dict = {}
     for key in a:
-        sum_dict[key] = ((a[key] + b[key])/1000) # divide by the total number of users in a location
+        sum_dict[key] = ((a[key] + b[key])) # add all the values for each key (i.e. city)
     return sum_dict 
 
+def generate_initial_key_value(line_entry):
+    entry_list = line_entry.split(",")
+    return tuple(entry_list[0],entry_list[1],entry_list[2])
+
+def simplify(key,user_personality):
+    [_idx,city] = key
+    return tuple(city,user_personality)
+
+def find(i,idx,user):
+        tweet_list(user)
+        
+def get_avg(a):
+    for key in a:
+        a[key] = a[key]/1000 #divide by 1000 to get the average
+    return a 
+
+
+def filter_rdd(key,by_city,user_info):
+    [idx,city] = key
+    if city == by_city:
+        return tuple(key,user_info)
 
 if __name__ == "__main__":
     tweet_list = get_all_tweets
@@ -113,7 +134,7 @@ if __name__ == "__main__":
     sc = SparkContext(conf=my_conf)
     sc._jsc.hadoopConfiguration().set("fs.s3n.awsAccessKeyId","") #specify your AWSAccessKey here
     sc._jsc.hadoopConfiguration().set("fs.s3n.awsSecretAccessKey","") #specify your AWSSecretKey here
-    input_rdd = sc.textFile('s3n://perloc/twitterDB.txt/').map(lambda entry: tuple(entry.split(",")))
+    input_rdd = sc.textFile('s3n://perloc/twitterDB.txt/').map(lambda entry: generate_initial_key_value(entry))
     print('input_rdd loaded')
     #print the start-time of the spark-job
     print(datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
@@ -122,24 +143,73 @@ if __name__ == "__main__":
      (twitter restrictions apply here, see twitter-API-rate-limits)
      https://dev.twitter.com/rest/public/rate-limits
     '''
-    rio_filter_rdd = input_rdd.filter(lambda (loc,user): loc=='Rio')
-    rio_rdd = rio_filter_rdd.mapValues(lambda user : tweet_list(user))
-    print('Rio RDD created')
+    rio_filter_rdd = input_rdd.filter(lambda (key,user): filter_rdd(key,'rio',user))
+    rio_A = rio_filter_rdd.take(150).mapValues(lambda user : tweet_list(user))
     time.sleep(61*15) # required because of the API-rate limit
-    chicago_filter_rdd = input_rdd.filter(lambda (loc,user): loc=='Chicago')
-    chicago_rdd = chicago_filter_rdd.mapValues(lambda user : tweet_list(user))
-    print('Chicago RDD created')
+    rio_B = rio_filter_rdd.substractByKey(rio_A).take(150).mapValues(lambda user : tweet_list(user))
     time.sleep(61*15)
-    newyork_filter_rdd = input_rdd.filter(lambda (loc,user): loc=='NewYork')
-    newyork_rdd = newyork_filter_rdd.mapValues(lambda user : tweet_list(user))
-    print('NewYork RDD created')
+    rio_C = rio_filter_rdd.substractByKey(rio_A union rio_B).take(150).mapValues(lambda user : tweet_list(user))
     time.sleep(61*15)
-    california_filter_rdd = input_rdd.filter(lambda (loc,user): loc=='California')
-    california_rdd = california_filter_rdd.mapValues(lambda user : tweet_list(user))
-    print('California RDD created')
+    rio_D = rio_filter_rdd.substractByKey(sc.union[rio_A,rio_B,rio_C]).take(150).mapValues(lambda user : tweet_list(user))
+    time.sleep(61*15)
+    rio_E = rio_filter_rdd.substractByKey(sc.union[rio_A,rio_B,rio_C,rio_D]).take(150).mapValues(lambda user : tweet_list(user))
+    time.sleep(61*15)
+    rio_F = rio_filter_rdd.substractByKey(sc.union[rio_A,rio_B,rio_C,rio_D,rio_E]).take(150).mapValues(lambda user : tweet_list(user))
+    rio_rdd = sc.union([rio_A,rio_B,rio_C,rio_D,rio_E,rio_F]).map(lambda key,user_personality: simplify(key,user_personality))
+    print('rio RDD created')
+    time.sleep(61*15)
+    
+    chicago_filter_rdd = input_rdd.filter(lambda (key,user): filter_rdd(key,'chicago',user))
+    chicago_A = chicago_filter_rdd.take(150).mapValues(lambda user : tweet_list(user))
+    time.sleep(61*15) # required because of the API-rate limit
+    chicago_B = chicago_filter_rdd.substractByKey(chicago_A).take(150).mapValues(lambda user : tweet_list(user))
+    time.sleep(61*15)
+    chicago_C = chicago_filter_rdd.substractByKey(chicago_A union chicago_B).take(150).mapValues(lambda user : tweet_list(user))
+    time.sleep(61*15)
+    chicago_D = chicago_filter_rdd.substractByKey(sc.union[chicago_A,chicago_B,chicago_C]).take(150).mapValues(lambda user : tweet_list(user))
+    time.sleep(61*15)
+    chicago_E = chicago_filter_rdd.substractByKey(sc.union[chicago_A,chicago_B,chicago_C,chicago_D]).take(150).mapValues(lambda user : tweet_list(user))
+    time.sleep(61*15)
+    chicago_F = chicago_filter_rdd.substractByKey(sc.union[chicago_A,chicago_B,chicago_C,chicago_D,chicago_E]).take(150).mapValues(lambda user : tweet_list(user))
+    chicago_rdd = sc.union([chicago_A,chicago_B,chicago_C,chicago_D,chicago_E,chicago_F]).map(lambda key,user_personality: simplify(key,user_personality))
+    print('chicago RDD created')
+    time.sleep(61*15)
+    
+    newyork_filter_rdd = input_rdd.filter(lambda (key,user): filter_rdd(key,'newyork',user))
+    newyork_A = newyork_filter_rdd.take(150).mapValues(lambda user : tweet_list(user))
+    time.sleep(61*15) # required because of the API-rate limit
+    newyork_B = newyork_filter_rdd.substractByKey(newyork_A).take(150).mapValues(lambda user : tweet_list(user))
+    time.sleep(61*15)
+    newyork_C = newyork_filter_rdd.substractByKey(newyork_A union newyork_B).take(150).mapValues(lambda user : tweet_list(user))
+    time.sleep(61*15)
+    newyork_D = newyork_filter_rdd.substractByKey(sc.union[newyork_A,newyork_B,newyork_C]).take(150).mapValues(lambda user : tweet_list(user))
+    time.sleep(61*15)
+    newyork_E = newyork_filter_rdd.substractByKey(sc.union[newyork_A,newyork_B,newyork_C,newyork_D]).take(150).mapValues(lambda user : tweet_list(user))
+    time.sleep(61*15)
+    newyork_F = newyork_filter_rdd.substractByKey(sc.union[newyork_A,newyork_B,newyork_C,newyork_D,newyork_E]).take(150).mapValues(lambda user : tweet_list(user))
+    newyork_rdd = sc.union([newyork_A,newyork_B,newyork_C,newyork_D,newyork_E,newyork_F]).map(lambda key,user_personality: simplify(key,user_personality))
+    print('newyork RDD created')
+    time.sleep(61*15)
+    
+    california_filter_rdd = input_rdd.filter(lambda (key,user): filter_rdd(key,'california',user))
+    california_A = california_filter_rdd.take(150).mapValues(lambda user : tweet_list(user))
+    time.sleep(61*15) # required because of the API-rate limit
+    california_B = california_filter_rdd.substractByKey(california_A).take(150).mapValues(lambda user : tweet_list(user))
+    time.sleep(61*15)
+    california_C = california_filter_rdd.substractByKey(california_A union california_B).take(150).mapValues(lambda user : tweet_list(user))
+    time.sleep(61*15)
+    california_D = california_filter_rdd.substractByKey(sc.union[california_A,california_B,california_C]).take(150).mapValues(lambda user : tweet_list(user))
+    time.sleep(61*15)
+    california_E = california_filter_rdd.substractByKey(sc.union[california_A,california_B,california_C,california_D]).take(150).mapValues(lambda user : tweet_list(user))
+    time.sleep(61*15)
+    california_F = california_filter_rdd.substractByKey(sc.union[california_A,california_B,california_C,california_D,california_E]).take(150).mapValues(lambda user : tweet_list(user))
+    california_rdd = sc.union([california_A,california_B,california_C,california_D,california_E,california_F]).map(lambda key,user_personality: simplify(key,user_personality))
+    print('california RDD created')
+    time.sleep(61*15)
+    
     # Once done with the personality analysis for each location, simply gather them all in one rdd
     finalRDD = sc.union([rio_rdd,chicago_rdd,newyork_rdd,california_rdd])
-                 .reduceByKey(lambda user1,user2 : get_avg(user1,user2)) # get the average of each personality trait for each location
+                 .reduceByKey(lambda user1,user2 : get_total(user1,user2)).mapValues(lambda x : get_avg(x)) # get the average of each personality trait for each location
     finalRDD.repartition(1).saveAsTextFile("s3n://perloc/twitter-ibm/personality-profile.txt")
     print('All done,file created')
     print(datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
