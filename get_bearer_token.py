@@ -1,31 +1,30 @@
-import urllib
 import base64
-import httplib
+import requests
 from tweepy.utils import import_simplejson
 json = import_simplejson()
 
 CONSUMER_KEY = ''
 CONSUMER_SECRET = ''
-encoded_CONSUMER_KEY = urllib.quote(CONSUMER_KEY)
-encoded_CONSUMER_SECRET = urllib.quote(CONSUMER_SECRET)
+encoded_CONSUMER_KEY = requests.utils.quote(CONSUMER_KEY,safe='')
+encoded_CONSUMER_SECRET = requests.utils.quote(CONSUMER_SECRET,safe='')
 
 concat_consumer_url = encoded_CONSUMER_KEY + ":" + encoded_CONSUMER_SECRET
 
-host = 'api.twitter.com'
-url = '/oauth2/token/'
-params = urllib.urlencode({'grant_type' : 'client_credentials'})
-req = httplib.HTTPSConnection(host)
-req.putrequest("POST", url)
-req.putheader("Host", host)
-req.putheader("User-Agent", "My Twitter 1.1")
-req.putheader("Authorization", "Basic %s" % base64.b64encode(concat_consumer_url))
-req.putheader("Content-Type" ,"application/x-www-form-urlencoded;charset=UTF-8")
-req.putheader("Content-Length", "29")
-req.putheader("Accept-Encoding", "utf-8")
+host_url = 'https://api.twitter.com/oauth2/token/'
+base64_encode_bytes = base64.b64encode(bytes(concat_consumer_url,'utf-8'))
+param_dict = {'grant_type' : 'client_credentials'}
+my_header = { "Host" : 'api.twitter.com',
+              "User-Agent" : "My Twitter 1.1",
+              "Authorization" : "Basic " + base64_encode_bytes.decode('utf-8'),
+              "Content-Type" : "application/x-www-form-urlencoded;charset=UTF-8",
+              "Content-Length" : "29",
+              "Accept-Encoding" : "utf-8" }
+resp = requests.post(host_url,data=param_dict,headers=my_header)
+print (resp.status_code)
+print (resp.text)
 
-req.endheaders()
-req.send(params)
-resp = req.getresponse()
 
-print resp.status, resp.reason
-print resp.read()
+
+#resp = req.getresponse()
+
+#
